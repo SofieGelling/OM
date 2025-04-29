@@ -38,6 +38,14 @@ COLORS = {
     'Onvoltooid' : 'lightgray'
 }
 
+    # helper om segment toe te voegen
+def add_seg(step_name, start, finish):
+    segments.append({
+        'Order' : order,
+        'Start' : start,
+        'Finish': finish,
+        'Stap'  : step_name
+    })
 # ---------- 5. Segmenten bouwen ----------
 segments = []
 today = pd.Timestamp.today().normalize()
@@ -48,14 +56,7 @@ for _, r in df.iterrows():
     if pd.isna(cur):
         continue                          # zonder Received kunnen we niks tekenen
 
-    # helper om segment toe te voegen
-    def add_seg(step_name, start, finish):
-        segments.append({
-            'Order' : order,
-            'Start' : start,
-            'Finish': finish,
-            'Stap'  : step_name
-        })
+
 
     # Planned
     if pd.notna(r['Planned']) and r['Planned'] > cur:
@@ -74,7 +75,7 @@ for _, r in df.iterrows():
 
     # Onvoltooid stuk tot vandaag (altijd aanwezig)
     if cur < today:
-        add_seg('Onvoltooid', cur, today)
+        add_seg('Onvoltooid', cur, r['DueDate'])
 
 segments_df = pd.DataFrame(segments)
 
