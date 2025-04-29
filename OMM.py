@@ -36,7 +36,7 @@ COLORS = {
 
 # 4. Segmenten bouwen
 today = pd.Timestamp.today().normalize()
-step_order = ['Planned', 'Analyses', 'Approved']
+step_order = ['Planned', 'Analyses', 'Approved', 'DueDate']
 segments = []
 
 for _, row in df.iterrows():
@@ -48,12 +48,12 @@ for _, row in df.iterrows():
     color = 'Onvoltooid'
     for step in step_order:
         step_date = row[step]
-        if pd.notna(step_date) and step_date > cur:
+        if pd.notna(step_date) and step_date >= cur:
             segments.append(dict(Order=order, Start=cur, Finish=step_date, Stap=color))
             cur = step_date
             color = step
 
-    segments.append(dict(Order=order, Start=cur, Finish=today, Stap=color))
+    segments.append(dict(Order=order, Start=cur, Finish=row['DueDate'], Stap=color))
 
 seg_df = pd.DataFrame(segments)
 
