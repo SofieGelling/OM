@@ -47,6 +47,7 @@ step_order = ['Planned', 'Analyses', 'Approved']
 for _, row in df.iterrows():
     order      = row['Order']
     start_date = row['Received']
+    due_date   = row['DueDate']
     if pd.isna(start_date):
         continue                    # kan niet tekenen zonder Received
 
@@ -69,7 +70,7 @@ for _, row in df.iterrows():
     # laatste segment (kleur = last_color) tot vandaag
     segments.append(dict(Order=order,
                          Start=last_date,
-                         Finish=today,
+                         Finish=due_date,
                          Stap=last_color))
 
 # DataFrame met alle blokken
