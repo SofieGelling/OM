@@ -1,71 +1,133 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime
 
-# 1. Lees Excel in
-df = pd.read_excel('TAT KPI Sheet (1).xlsx', sheet_name='Samples Release 2025')
+# ---------- 1. Excel inlezen ----------
+FILE = r'TAT KPI Sheet (2).xlsx'  # <-- pad evt. aanpassen
+SHEET = 'Samples Release 2025'
 
-# 2. Kolomnamen aanpassen aan jouw bestand
-df = df[[
-    'Batch number',
-    'Date received lab',
-    'Planned',
-    'Analyses completed',
-    'Approval analyses',
-    'Finish date QC',
-    'Duedate'
-]].copy()
+df = pd.read_excel(FILE, sheet_name=SHEET)
 
-df.columns = ['Order', 'Start', 'Step1', 'Step2', 'Step3', 'End', 'DueDate']
+# ---------- 2. Relevante kolommen ----------
+df = df[['Batch number',
+         'Date received lab',
+         'Planned',
+         'Analyses completed',
+         'Approval analyses',
+         'Finish date QC',
+         'Duedate']].copy()
 
-# 3. Zorg dat alle datums echt datums zijn
-for col in ['Start', 'Step1', 'Step2', 'Step3', 'End', 'DueDate']:
+df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']
+
+# ---------- 3. Datums casten ----------
+for col in ['Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']:
     df[col] = pd.to_datetime(df[col], errors='coerce')
 
-# 4. Filter op openstaande (niet-afgeronde) orders
-df_open = df[df['End'].isna()].copy()
-df_open['DueDate'] = pd.to_datetime(df_open['DueDate'], errors='coerce')
-df_open = df_open.sort_values('DueDate')
+# alleen nog niet afgeronde batches
+df = df[df['Finished'].isna()].copy()
+# Zet batchnummer overal naar string zodat het altijd matcht
+df['Order'] = df['Order'].astype(str)
 
-# 5. Bouw tijdlijn op
-records = []
-for _, row in df_open.iterrows():
-    last_date = row['Start']
-    for step in ['Step1', 'Step2', 'Step3', 'End']:
-        if pd.notna(row[step]):
-            records.append({
-                'Order': str(row['Order']),  # maak string voor y-as
-                'Start': last_date,
-                'Finish': row[step],
-                'Status': 'Voltooid'
-            })
-            last_date = row[step]
-        else:
-            eindpunt = min(datetime.now(), row['DueDate']) if pd.notna(row['DueDate']) else datetime.now()
-            records.append({
-                'Order': str(row['Order']),
-                'Start': last_date,
-                'Finish': eindpunt,
-                'Status': 'Open'
-            })
-            break
 
-timeline_df = pd.DataFrame(records)
+# ---------- 4. Kleuren ----------
+COLORS = {
+    'Planned'    : 'lightgreen',
+    'Analyses'   : 'gold',
+    'Approved'   : 'mediumorchid',
+    'Onvoltooid' : 'lightgray'
+}
 
-# 6. Debug: check de inhoud
-print(timeline_df.head(10))
+# ---------- 5. Segmenten bouwen ----------
+segments = []
+today = pd.Timestamp.today().normalize()
 
-# 7. Plot
+for _, r in df.iterrows():
+    order = str(r['Order'])
+    cur   = r['Received']                 # startpunt is altijd Received
+    if pd.isna(cur):
+        continue                          # zonder Received kunnen we niks tekenen
+
+    # helper om segment toe te voegen
+    def add_seg(step_name, start, finish):
+        segments.append({
+            'Order' : order,
+            'Start' : start,
+            'Finish': finish,
+            'Stap'  : step_name
+        })
+
+    # Planned
+    if pd.notna(r['Planned']) and r['Planned'] > cur:
+        add_seg('Planned', cur, r['Planned'])
+        cur = r['Planned']
+
+    # Analyses
+    if pd.notna(r['Analyses']) and r['Analyses'] > cur:
+        add_seg('Analyses', cur, r['Analyses'])
+        cur = r['Analyses']
+
+    # Approved
+    if pd.notna(r['Approved']) and r['Approved'] > cur:
+        add_seg('Approved', cur, r['Approved'])
+        cur = r['Approved']
+
+    # Onvoltooid stuk tot vandaag (altijd aanwezig)
+    if cur < today:
+        add_seg('Onvoltooid', cur, today)
+
+segments_df = pd.DataFrame(segments)
+
+# ---------- 6. Tijdlijn tekenen ----------
 fig = px.timeline(
-    timeline_df,
+    segments_df,
     x_start="Start",
     x_end="Finish",
     y="Order",
-    color="Status",
-    color_discrete_map={'Voltooid': 'seagreen', 'Open': 'tomato'}
+    color="Stap",
+    color_discrete_map=COLORS,
 )
-fig.update_yaxes(autorange="reversed")
-fig.update_layout(title_text="Overzicht voortgang orders")
 
-# 8. Show de figuur
+fig.update_yaxes(autorange="reversed")
+
+# ---------- 7. Custom hovers ----------
+custom_hover = []
+for s in segments_df.itertuples():
+    lines = [f"Received: {df.loc[df['Order']==s.Order,'Received'].iloc[0].date()}"]
+    if s.Stap in ['Planned', 'Analyses', 'Approved']:
+        lines.append(f"{s.Stap}: {s.Finish.date()}")
+    if s.Stap == 'Onvoltooid':
+        row = df.loc[df['Order']==s.Order].iloc[0]
+        if pd.notna(row['Planned']):
+            lines.append(f"Planned: {row['Planned'].date()}")
+        if pd.notna(row['Analyses']):
+            lines.append(f"Analyses completed: {row['Analyses'].date()}")
+        if pd.notna(row['Approved']):
+            lines.append(f"Approval analyses: {row['Approved'].date()}")
+        if pd.notna(row['DueDate']):
+            lines.append(f"Due date: {row['DueDate'].date()}")
+    custom_hover.append("<br>".join(lines))
+
+fig.update_traces(hovertemplate=[h + "<extra></extra>" for h in custom_hover])
+
+# ---------- 8. Due-date markers ----------
+due_df = df.dropna(subset=['DueDate'])
+fig.add_trace(go.Scatter(
+    x=due_df['DueDate'],
+    y=due_df['Order'].astype(str),
+    mode='markers',
+    marker=dict(symbol='diamond', size=10, color='red'),
+    name='Due Date',
+    hovertemplate=due_df['DueDate'].dt.strftime("Due date: %Y-%m-%d") + "<extra></extra>"
+))
+
+# Legend items komen nu één keer voor; geen duplicates meer
+fig.update_layout(
+    title="Voortgang batches – eindigend op vandaag",
+    xaxis_title="Datum",
+    yaxis_title="Batch nummer",
+    height=900,
+    legend_title="Processtap"
+)
+
 fig.show()
