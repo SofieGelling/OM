@@ -2,9 +2,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
+import numpy as np
 
 # 1. Excel inlezen
 FILE  = r'TAT KPI Sheet (2).xlsx'
+
 SHEET = 'Samples Release 2025'
 df = pd.read_excel(FILE, sheet_name=SHEET)
 
@@ -19,6 +21,8 @@ df = df[['Batch number',
 
 df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']
 df['Order'] = df['Order'].astype(str)
+df = df.sort_values(by='DueDate')
+
 
 # Datum-kolommen naar datetime
 for col in ['Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']:
@@ -28,10 +32,10 @@ df = df[df['Finished'].isna()].copy()  # Alleen openstaande
 
 # 3. Kleuren
 COLORS = {
-    'Onvoltooid': 'lightgray',
-    'Planned': 'lightgreen',
-    'Analyses': 'gold',
-    'Approved': 'mediumorchid'
+    'Onvoltooid': '#d1d1d1',
+    'Planned': '#87a9fa',
+    'Analyses': '#0acafa',
+    'Approved': '#07f702'
 }
 
 # 4. Segmenten bouwen
@@ -92,17 +96,17 @@ fig.add_trace(go.Scatter(
     x=df['DueDate'],
     y=df['Order'],
     mode='markers',
-    marker=dict(symbol='diamond', size=9, color='red'),
+    marker=dict(symbol='square', size=9, color='black'),
     name='Due Date',
     hovertemplate=df['DueDate'].dt.strftime("Due date: %Y-%m-%d") + "<extra></extra>"
 ))
 
 # 9. Layout
 fig.update_layout(
-    title='Voortgang openstaande batches (balk tot vandaag)',
-    xaxis_title='Datum',
+    title='Open batches (as of today)',
+    xaxis_title='Date',
     yaxis_title='Batch nummer',
-    legend_title='Processtap',
+    legend_title='Process step',
     height=900
 )
 
