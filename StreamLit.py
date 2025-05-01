@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from OM import planning  
-from st_pages import add_page_title
 # pip install st-pages
 # streamlit run StreamLit.py
 
