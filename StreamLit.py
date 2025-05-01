@@ -19,3 +19,6 @@ if uploaded:
 
 else:
     st.info("👈 Voeg het 'TAT KPI' Excel-bestand toe om de tijdlijn te zien")
+
+## put this is command file
+## python -m streamlit run StreamLit.py
