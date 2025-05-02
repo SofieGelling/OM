@@ -1,3 +1,4 @@
+import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -5,21 +6,19 @@ from datetime import datetime
 import numpy as np
 
 
-def planning (df):
-
+def planning(df, color_scheme='Default', marker_shape='square', marker_color='black'):
     # 2. Kolommen selecteren & hernoemen
     df = df[['Batch number',
-            'Date received lab',
-            'Planned',
-            'Analyses completed',
-            'Approval analyses',
-            'Finish date QC',
-            'Duedate']].copy()
+             'Date received lab',
+             'Planned',
+             'Analyses completed',
+             'Approval analyses',
+             'Finish date QC',
+             'Duedate']].copy()
 
     df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']
     df['Order'] = df['Order'].astype(str)
     df = df.sort_values(by='DueDate')
-
 
     # Datum-kolommen naar datetime
     for col in ['Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']:
@@ -27,17 +26,50 @@ def planning (df):
 
     df = df[df['Finished'].isna()].copy()  # Alleen openstaande
 
-    # 3. Kleuren
-    COLORS = {
-        'Onvoltooid': '#d1d1d1',
-        'Planned': '#87a9fa',
-        'Analyses': '#0acafa',
-        'Approved': '#07f702'
+    # 3. Kleuren - met kleurenschema opties
+    color_schemes = {
+        'Default': {
+            'Onvoltooid': '#d1d1d1',
+            'Planned': '#87a9fa',
+            'Analyses': '#0acafa',
+            'Approved': '#07f702'
+        },
+        'Blues': {
+            'Onvoltooid': '#8dbdf4',
+            'Planned': '#4f88de',
+            'Analyses': '#2567d1',
+            'Approved': '#154bb5'
+        },
+        'Pinks': {
+            'Onvoltooid': '#f59ab4',
+            'Planned': '#ef5c91',
+            'Analyses': '#e91e63',
+            'Approved': '#ad1457'
+        },
+        'Greys': {
+            'Onvoltooid': '#bbbbbb',
+            'Planned': '#909090',
+            'Analyses': '#6b6b6b',
+            'Approved': '#4d4d4d'
+        },
+        'Greens': {
+            'Onvoltooid': '#aed9b8',
+            'Planned': '#6fcf97',
+            'Analyses': '#43a047',
+            'Approved': '#2e7d32'
+        },
+        'Oranges': {
+            'Onvoltooid': '#ffcc80',
+            'Planned': '#ffa726',
+            'Analyses': '#fb8c00',
+            'Approved': '#e65100'
+        }
     }
+    COLORS = color_schemes.get(color_scheme, color_schemes['Default'])
 
     # 4. Segmenten bouwen
     today = pd.Timestamp.today().normalize()
-    step_order = ['Planned', 'Analyses', 'Approved', 'DueDate']
+    step_order = ['Planned', 'Analyses', 'Approved']
     segments = []
 
     for _, row in df.iterrows():
@@ -75,7 +107,6 @@ def planning (df):
     df['Order'] = df['Order'].astype(str)
     seg_df['Order'] = seg_df['Order'].astype(str)
 
-
     # 7. Timeline tekenen
     fig = px.timeline(
         seg_df,
@@ -89,14 +120,25 @@ def planning (df):
     fig.update_traces(hovertemplate='%{customdata[0]}<extra></extra>')
     fig.update_yaxes(type='category', autorange='reversed')
 
-    # 8. Due-date markers
+    # 8.1 Verticale lijn voor vandaag (volledig doorgetrokken, met legenda)
+    fig.add_shape(
+        type="line",
+        x0=today,
+        y0=-0.5,
+        x1=today,
+        y1=len(df)-0.5,
+        line=dict(color="grey", width=2, dash="dot"),
+        name="Today"
+    )
+
     fig.add_trace(go.Scatter(
         x=df['DueDate'],
         y=df['Order'],
         mode='markers',
-        marker=dict(symbol='square', size=9, color='black'),
+        marker=dict(symbol=marker_shape, size=9, color=marker_color),
         name='Due Date',
-        hovertemplate=df['DueDate'].dt.strftime("Due date: %Y-%m-%d") + "<extra></extra>"
+        hovertemplate=df['DueDate'].dt.strftime("Due date: %Y-%m-%d") + "<extra></extra>",
+        showlegend=True
     ))
 
     # 9. Layout
