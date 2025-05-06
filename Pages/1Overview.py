@@ -9,10 +9,10 @@ if 'excel_df' in st.session_state:
 
     # ► Kleurenschema‑opties moeten overeenkomen met de dict‑sleutels in planning()
     scheme_options = ['Default', 'Blues', 'Pinks', 'Greys', 'Greens', 'Oranges']
-
-    color_scheme  = st.selectbox("🎨 Choose a colour scheme", scheme_options)
-    marker_shape  = st.selectbox("🔷 Marker symbol", ['square', 'circle', 'diamond'])
-    marker_color  = st.color_picker("🖌️ Marker colour", '#000000')
+    with st.expander("🎨 Change colours", expanded=False):
+        color_scheme  = st.selectbox("🎨 Choose a colour scheme", scheme_options)
+        marker_shape  = st.selectbox("🔷 Marker symbol", ['square', 'circle', 'diamond'])
+        marker_color  = st.color_picker("🖌️ Marker colour", '#000000')
 
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst
     fig = planning(

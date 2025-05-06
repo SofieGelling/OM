@@ -88,6 +88,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
         segments.append(dict(Order=order, Start=cur, Finish=row['DueDate'], Stap=color))
 
+
     seg_df = pd.DataFrame(segments)
 
     # 5. Hovertekst toevoegen via merge (en correct sorteren)

@@ -12,4 +12,3 @@ def find_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 
     duplicates = df[df.duplicated(subset='Batch number', keep=False)].copy()
     return duplicates.sort_values(by='Batch number')
-
