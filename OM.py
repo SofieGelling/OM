@@ -14,10 +14,13 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
              'Analyses completed',
              'Approval analyses',
              'Finish date QC',
-             'Duedate']].copy()
+             'Duedate',
+             'Type of Samples']].copy()
 
-    df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']
+    df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type']
     df['Order'] = df['Order'].astype(str)
+    df['Type'] = df['Type'].astype(str)
+
     df = df.sort_values(by='DueDate')
 
     # Datum-kolommen naar datetime
@@ -160,3 +163,21 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     )
 
     return fig
+
+def filter_by_sample_type(df, sample_type):
+    if 'Type of samples' not in df.columns:
+        raise KeyError("The dataframe does not contain a 'Type of samples' column.")
+    
+    # Convert single string input to list
+    if isinstance(sample_type, str):
+        sample_type = [sample_type]
+    
+    # Check if all input values exist in the column
+    unique_types = df['Type of samples'].unique()
+    missing = [s for s in sample_type if s not in unique_types]
+    
+    if missing:
+        raise ValueError(f"The following values were not found in 'Type of samples': {missing}")
+
+    return df[df['Type of samples'].isin(sample_type)]
+
