@@ -15,7 +15,8 @@ if 'excel_df' in st.session_state:
         marker_shape  = st.selectbox("🔷 Marker symbol", ['square', 'circle', 'diamond'])
         marker_color  = st.color_picker("🖌️ Marker colour", '#000000')
 
-    df['Type of samples'] = df['Type of samples'].replace('GMP+ Des', 'GMP+ des')
+    df = df[df['Finish date QC'].isna()].copy()
+    #df['Type of samples'] = df['Type of samples'].replace('GMP+ Des', 'GMP+ des')
 
     type_samples = df['Type of samples'].unique()
     filter_samples = []
