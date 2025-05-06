@@ -21,8 +21,6 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     df['Order'] = df['Order'].astype(str)
     df['Type'] = df['Type'].astype(str)
 
-    df = df.sort_values(by='DueDate')
-
     # Datum-kolommen naar datetime
     for col in ['Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']:
         df[col] = pd.to_datetime(df[col], errors='coerce')
