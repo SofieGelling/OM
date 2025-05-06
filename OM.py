@@ -15,7 +15,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
              'Approval analyses',
              'Finish date QC',
              'Duedate',
-             'Type of Samples']].copy()
+             'Type of samples']].copy()
 
     df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type']
     df['Order'] = df['Order'].astype(str)
@@ -94,18 +94,16 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
     seg_df = pd.DataFrame(segments)
 
-    # 5. Hovertekst toevoegen via merge (en correct sorteren)
-    def build_hover(r):
-        lines = [f"<b>{r['Order']}</b>: onvoltooid"]
-        if pd.notna(r['Received']): lines.append(f"Received: {r['Received'].date()}")
-        if pd.notna(r['Planned']): lines.append(f"Planned: {r['Planned'].date()}")
-        if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
-        if pd.notna(r['Approved']): lines.append(f"Approval analyses: {r['Approved'].date()}")
-        if pd.notna(r['DueDate']): lines.append(f"Due date: {r['DueDate'].date()}")
-        return "<br>".join(lines)
 
     df['Hover'] = df.apply(build_hover, axis=1)
-    seg_df = seg_df.merge(df[['Order', 'Hover']], on='Order', how='left')
+    required_columns = ['Order', 'Hover']
+    for col in required_columns:
+        if col not in df.columns:
+            raise KeyError(f"Column '{col}' not found in dataframe.")
+
+    seg_df = seg_df.merge(df[required_columns], on='Order', how='left')
+
+    #seg_df = seg_df.merge(df[['Order', 'Hover']], on='Order', how='left')
 
     # 6. Zorg dat y-as categorisch blijft
     df['Order'] = df['Order'].astype(str)
@@ -164,6 +162,16 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
     return fig
 
+    # 5. Hovertekst toevoegen via merge (en correct sorteren)
+def build_hover(r):
+    lines = [f"<b>{r['Order']}</b>: onvoltooid"]
+    if pd.notna(r['Received']): lines.append(f"Received: {r['Received'].date()}")
+    if pd.notna(r['Planned']): lines.append(f"Planned: {r['Planned'].date()}")
+    if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
+    if pd.notna(r['Approved']): lines.append(f"Approval analyses: {r['Approved'].date()}")
+    if pd.notna(r['DueDate']): lines.append(f"Due date: {r['DueDate'].date()}")
+    return "<br>".join(lines)
+    
 def filter_by_sample_type(df, sample_type):
     if 'Type of samples' not in df.columns:
         raise KeyError("The dataframe does not contain a 'Type of samples' column.")
