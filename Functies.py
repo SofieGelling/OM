@@ -12,3 +12,25 @@ def find_duplicates(df: pd.DataFrame) -> pd.DataFrame:
 
     duplicates = df[df.duplicated(subset='Batch number', keep=False)].copy()
     return duplicates.sort_values(by='Batch number')
+
+def remove_empty_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Verwijdert rijen waar alle kernvelden leeg of NaN zijn.
+    """
+    cols = [
+        'Batch number',
+        'Type of samples',
+        'Duedate',
+        'Finish date QC',
+        'Date received lab',
+        'Product code'
+    ]
+
+    # Zorg dat kolommen bestaan, anders voeg je ze tijdelijk toe voor controle
+    for col in cols:
+        if col not in df.columns:
+            df[col] = pd.NA
+
+    # Filter rijen waar ALLE genoemde kolommen leeg zijn
+    cleaned_df = df.dropna(subset=cols, how='all')
+    return cleaned_df

@@ -1,8 +1,13 @@
 import streamlit as st
-from Functies import find_duplicates
+from Functies import find_duplicates, remove_empty_rows
 
 st.set_page_config(page_title="Analyse", layout="wide")
 st.title("📊 Analyse")
+
+if 'excel_df' in st.session_state:
+    df = remove_empty_rows(st.session_state['excel_df'])  # ⬅️ hier schonen
+    st.session_state['excel_df'] = df  # opslaan geschoonde versie
+
 
 if 'excel_df' in st.session_state:
     df = st.session_state['excel_df']
