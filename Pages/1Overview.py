@@ -28,9 +28,8 @@ if 'excel_df' in st.session_state:
         # 🔽 Extra sorteeroptie
     sort_column = st.selectbox(
         "📑 Sort by:",
-        ['DueDate (soonest first)', 'Date received lab (earliest first)', 'Batch number (A-Z)']
+        ['DueDate (soonest first)', 'Date received lab (earliest first)']
     )
-
     if sort_column == 'DueDate (soonest first)':
         df = df.sort_values(by='Duedate', ascending=True)
     elif sort_column == 'Date received lab (earliest first)':
