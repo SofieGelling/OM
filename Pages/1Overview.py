@@ -16,10 +16,15 @@ if 'excel_df' in st.session_state:
         marker_color  = st.color_picker("🖌️ Marker colour", '#000000')
 
     type_samples = df['Type of samples'].unique()
-    filter_sample = st.selectbox('Samples to filter', type_samples)
+    filter_samples = []
+    for sample in type_samples:
+        if st.checkbox(str(sample), value=True):
+            filter_samples.append(sample)
+            
+    #filter_sample = st.selectbox('Samples to filter', type_samples)
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst
     fig = planning(
-        df= filter_by_sample_type(df, filter_sample),
+        df= filter_by_sample_type(df, filter_samples),
         color_scheme=color_scheme,
         marker_shape=marker_shape,
         marker_color=marker_color
