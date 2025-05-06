@@ -17,9 +17,10 @@ if 'excel_df' in st.session_state:
 
     type_samples = df['Type of samples'].unique()
     filter_samples = []
-    for sample in type_samples:
-        if st.checkbox(str(sample), value=True):
-            filter_samples.append(sample)
+    with st.expander("filter samples", expanded=False):
+        for sample in type_samples:
+            if st.checkbox(str(sample), value=True):
+                filter_samples.append(sample)
             
     #filter_sample = st.selectbox('Samples to filter', type_samples)
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst

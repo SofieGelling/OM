@@ -143,4 +143,3 @@ def wachttijden(df):
 
 
 df = pd.read_excel('TAT KPI Sheet (3).xlsx', sheet_name='Samples Release 2025')
-wachttijden(df)
