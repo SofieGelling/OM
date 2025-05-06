@@ -17,7 +17,7 @@ if 'excel_df' in st.session_state:
 
     type_samples = df['Type of samples'].unique()
     filter_samples = []
-    with st.expander("🔍 Filter for samples", expanded=False):
+    with st.expander("🔍 Filter: Type of samples", expanded=False):
         for sample in type_samples:
             if st.checkbox(str(sample), value=True):
                 filter_samples.append(sample)
