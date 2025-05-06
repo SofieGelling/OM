@@ -128,9 +128,17 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         y0=-0.5,
         x1=today,
         y1=len(df)-0.5,
-        line=dict(color="grey", width=2, dash="dot"),
-        name="Today"
+        line=dict(color="grey", width=2, dash="dot")
     )
+
+    # Today toevoegen aan legenda
+    fig.add_trace(go.Scatter(
+        x=[today],
+        y=[None],  # y=None zodat hij geen punt tekent
+        mode='lines',
+        line=dict(color="grey", width=2, dash="dot"),
+        name=f"Today: {today.date()}"
+    ))
 
     fig.add_trace(go.Scatter(
         x=df['DueDate'],

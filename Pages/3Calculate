@@ -1,5 +1,4 @@
 import streamlit as st
-from OM import planning   # functie die je net hebt aangepast
 
 st.set_page_config(page_title="Calculate", layout="wide")
 st.title("Calculations")
