@@ -195,4 +195,4 @@ def filter_by_sample_type(df, sample_type=None):
 
 def filter_OOS(df, error_reason='OOS'):
 
-    return df[df['Reason overdue'].str.contains(error_reason, case=True, na=False)]
+    return df[np.logical_not(list(df['Reason overdue'].str.contains(error_reason, case=True, na=False)))]
