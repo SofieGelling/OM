@@ -8,7 +8,8 @@ import numpy as np
 
 def planning(df, color_scheme='Default', marker_shape='square', marker_color='black'):
     # 2. Kolommen selecteren & hernoemen
-    df = df[['Batch number',
+    df = df[['Product code',
+             'Batch number',
              'Date received lab',
              'Planned',
              'Analyses completed',
@@ -17,7 +18,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
              'Duedate',
              'Type of samples']].copy()
 
-    df.columns = ['Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type']
+    df.columns = ['ProductID','Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type']
     df['Order'] = df['Order'].astype(str)
     df['Type'] = df['Type'].astype(str)
 
@@ -163,6 +164,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     # 5. Hovertekst toevoegen via merge (en correct sorteren)
 def build_hover(r):
     lines = [f"<b>{r['Order']}</b>: onvoltooid"]
+    lines.append(f"<b>{r['ProductID']}</b>")
     if pd.notna(r['Received']): lines.append(f"Received: {r['Received'].date()}")
     if pd.notna(r['Planned']): lines.append(f"Planned: {r['Planned'].date()}")
     if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
