@@ -1,5 +1,5 @@
 import streamlit as st
-from OM import planning, filter_by_sample_type
+from OM import planning, filter_by_sample_type, filter_OOS
 import pandas as pd
 
 st.set_page_config(page_title="Planning", layout="wide")
@@ -17,7 +17,10 @@ if 'excel_df' in st.session_state:
 
     df = df[df['Finish date QC'].isna()].copy()
     df['Date received lab'] = pd.to_datetime(df['Date received lab'], errors='coerce')
-
+    filter_soo_bool = st.button('Remove SOO cases', )
+    if filter_soo_bool:
+        df = filter_OOS(df)
+        
     type_samples = df['Type of samples'].unique()
     filter_samples = []
     with st.expander("🔍 Filter: Type of samples", expanded=False):
