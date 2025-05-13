@@ -1,6 +1,5 @@
 import streamlit as st
-from OM import planning   # functie die je net hebt aangepast
-from OM import filter_by_sample_type
+from OM import planning, filter_by_sample_type
 
 st.set_page_config(page_title="Planning", layout="wide")
 st.title("📦 Planningstijdlijn")
@@ -16,6 +15,7 @@ if 'excel_df' in st.session_state:
         marker_color  = st.color_picker("🖌️ Marker colour", '#000000')
 
     df = df[df['Finish date QC'].isna()].copy()
+    #df['Type of samples'] = df['Type of samples'].replace('GMP+ Des', 'GMP+ des')
 
     type_samples = df['Type of samples'].unique()
     filter_samples = []
@@ -24,6 +24,18 @@ if 'excel_df' in st.session_state:
             if st.checkbox(str(sample), value=True):
                 filter_samples.append(sample)
             
+    
+        # 🔽 Extra sorteeroptie
+    sort_column = st.selectbox(
+        "📑 Sort by:",
+        ['DueDate (soonest first)', 'Date received lab (earliest first)']
+    )
+    if sort_column == 'DueDate (soonest first)':
+        df = df.sort_values(by='Duedate', ascending=True)
+    elif sort_column == 'Date received lab (earliest first)':
+        df = df.sort_values(by='Date received lab', ascending=True)
+
+
     #filter_sample = st.selectbox('Samples to filter', type_samples)
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst
     fig = planning(
