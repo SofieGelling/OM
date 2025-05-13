@@ -39,15 +39,16 @@ if 'excel_df' in st.session_state:
     #filter_sample = st.selectbox('Samples to filter', type_samples)
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst
     if not filter_samples:
-        filter_samples = type_samples.tolist()  # fallback to all types
+        st.warning("⚠️ Selecteer minimaal één 'Type of sample' om de tijdlijn te bekijken.")
+    else:
+        fig = planning(
+            df= filter_by_sample_type(df, filter_samples),
+            color_scheme=color_scheme,
+            marker_shape=marker_shape,
+            marker_color=marker_color
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
-    fig = planning(
-        df= filter_by_sample_type(df, filter_samples),
-        color_scheme=color_scheme,
-        marker_shape=marker_shape,
-        marker_color=marker_color
-    )
-    st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.warning("⚠️ Upload an Excel file on the main page first.")
