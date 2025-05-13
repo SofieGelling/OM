@@ -170,14 +170,17 @@ def build_hover(r):
     if pd.notna(r['DueDate']): lines.append(f"Due date: {r['DueDate'].date()}")
     return "<br>".join(lines)
     
-def filter_by_sample_type(df, sample_type):
+def filter_by_sample_type(df, sample_type=None):
     if 'Type of samples' not in df.columns:
         raise KeyError("The dataframe does not contain a 'Type of samples' column.")
+    
+    if sample_type==None:
+        return df
     
     # Convert single string input to list
     if isinstance(sample_type, str):
         sample_type = [sample_type]
-    
+
     # Check if all input values exist in the column
     unique_types = df['Type of samples'].unique()
     missing = [s for s in sample_type if s not in unique_types]
