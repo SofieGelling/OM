@@ -4,11 +4,11 @@ import matplotlib.dates as mdates
 import plotly.graph_objects as go
 import plotly.express as px
 
-df = pd.read_excel('TAT KPI Sheet (1).xlsx', sheet_name='Samples Release 2025')
+df = pd.read_excel('TAT KPI Sheet (3).xlsx', sheet_name='Samples Release 2025')
 df
 
 # Define stages in order
-stage_columns = ['Planned', 'Analyses completed', 'Approval analyses', 'Finish date QC']
+stage_columns = ['Date received lab','Planned', 'Analyses completed', 'Approval analyses', 'Finish date QC']
 
 # Function to determine latest (current) stage — excluding 'Finish date QC'
 def get_current_stage(row):
@@ -32,7 +32,7 @@ fig = px.bar(
     x=stage_counts.values,
     y=stage_counts.index,
     orientation='h',
-    labels={'y': 'Stage', 'x': 'Number of Batches'},
+    labels={'y': 'phase', 'x': 'Number of Batches'},
     title='In-Progress Batches per Stage (Finished Excluded)'
 )
 
