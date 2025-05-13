@@ -38,6 +38,9 @@ if 'excel_df' in st.session_state:
 
     #filter_sample = st.selectbox('Samples to filter', type_samples)
     # ⬇️ Gebruik de gekozen waarden i.p.v. hard‑coded tekst
+    if not filter_samples:
+        filter_samples = type_samples.tolist()  # fallback to all types
+
     fig = planning(
         df= filter_by_sample_type(df, filter_samples),
         color_scheme=color_scheme,
