@@ -175,7 +175,7 @@ def filter_by_sample_type(df, sample_type=None):
         raise KeyError("The dataframe does not contain a 'Type of samples' column.")
     
     if sample_type==None:
-        return df
+        sample_type = df['Type of samples'].unique()
     
     # Convert single string input to list
     if isinstance(sample_type, str):
