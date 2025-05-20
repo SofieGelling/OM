@@ -1,55 +1,94 @@
 import streamlit as st
-from Functies import find_duplicates
+from Functies import find_duplicates   # ← your helper
 
-st.set_page_config(page_title="Analyse", layout="wide")
-st.title("📊 Analyse")
+st.set_page_config(page_title="Analysis", layout="wide")
+st.title("🚩 Data-quality checks")
 
+# ─────────────────────────────────────────────────────────────
+# Inleiding
+st.markdown("""
+<span style='font-size: 0.9em; color: grey;'>
+This page helps you identify and fix common data issues that may impact analysis or timeline visualization.
 
-if 'excel_df' in st.session_state:
-    df = st.session_state['excel_df']
+Typical problems include:
+- Missing or renamed required columns.
+- Duplicate batch numbers, which can cause visual overlap.
+- Old or finished entries that clutter current insights.
 
-    st.subheader("Check for duplicate batch numbers")
+Use the filters and duplicate check below to clean and refine your dataset.
+</span>
+""", unsafe_allow_html=True)
 
-    # Toggle: alleen niet-afgeronde batches
-    filter_unfinished = st.toggle("🔘 Show only non-finished batches")
-    working_df = df[df['Finish date QC'].isna()] if filter_unfinished else df
+# ─────────────────────────────────────────────────────────────
+# Vereiste kolommen uitleg
+with st.expander("📋 Required column names", expanded=False):
+    st.markdown("""
+Your uploaded file **must include** the following column names **without changes**:
 
-    # Check-knop om duplicaten te zoeken
-    if st.button("🔍 Check for duplicate batch numbers"):
-        duplicates = find_duplicates(working_df)
-        st.session_state['duplicates'] = duplicates  # ⬅️ opslaan in session
+- `Batch number`  
+- `Date received lab`  
+- `Planned`  
+- `Analyses completed`  
+- `Approval analyses`  
+- `Finish date QC`  
+- `Duedate`
 
-    # Als er eerder gevonden duplicaten zijn:
-    if 'duplicates' in st.session_state:
-        duplicates = st.session_state['duplicates']
+You may add or remove other columns as needed, but **do not rename or delete** these required ones. If any are missing or renamed, the timeline and other features may not work correctly.
+""")
 
-        if not duplicates.empty:
-            st.warning("⚠️ Duplicate batch numbers found:")
-            st.markdown("**Select rows to delete:**")
+# ─────────────────────────────────────────────────────────────
+# Check of bestand is ingeladen
+if 'excel_df' not in st.session_state:
+    st.info("👈 First upload a spreadsheet on the main page.")
+    st.stop()
 
-            # ⬅️ lijst om geselecteerde indexen op te slaan
-            selected_rows = []
-            for i, row in duplicates.iterrows():
-                label = (
-                    f"Batch: {row['Batch number']} | "
-                    f"Sample Type: {row.get('Type of samples', '')} | "
-                    f"DueDate: {row.get('Duedate', '')} | "
-                    f"Finish QC: {row.get('Finish date QC', '')} | "
-                    f"Received: {row.get('Date received lab', '')} | "
-                    f"Product: {row.get('Product code', '')}"
-                )
-                if st.checkbox(label, key=f"select_{i}"):
-                    selected_rows.append(i)
+df = st.session_state['excel_df']
 
-            # Verwijderknop onderaan
-            if selected_rows and st.button("🗑️ Delete selected rows"):
-                st.session_state['excel_df'] = st.session_state['excel_df'].drop(index=selected_rows).reset_index(drop=True)
-                # duplicaten opnieuw opslaan zonder verwijderde
-                st.session_state['duplicates'] = st.session_state['duplicates'].drop(index=selected_rows).reset_index(drop=True)
-                st.success(f"✅ {len(selected_rows)} row(s) deleted from the dataset.")
-        else:
-            st.success("✅ No duplicate batch numbers found.")
-else:
-    st.info("👈 Upload a spreadsheet file from the main page first.")
+# ─────────────────────────────────────────────────────────────
+# Duplicates-sectie met uitleg + check + unfinished toggle in één expander
+with st.expander("🔍 Duplicate batch numbers", expanded=True):
+    st.markdown("""
+If multiple rows share the same **Batch number**, the timeline chart may show overlapping bars or misleading durations.
 
+This tool allows you to:
+- Detect batch number duplicates
+- Select specific rows to remove
+- Filter only unfinished batches if desired
 
+Removing duplicates helps clean your dataset and ensures accurate visualizations.
+""")
+
+    # Filter on finished batches
+    show_open = st.toggle("Show *only* unfinished batches", value=True)
+    working_df = df[df['Finish date QC'].isna()] if show_open else df
+
+    # Duplicate check
+    if st.button("🔍 Run duplicate check"):
+        st.session_state['duplicates'] = find_duplicates(working_df)
+
+    duplicates = st.session_state.get('duplicates')
+
+    if duplicates is None:
+        st.info("Press the button above to scan for duplicates.")
+    elif duplicates.empty:
+        st.success("✅ No duplicate batch numbers found.")
+    else:
+        st.warning(f"⚠️ {len(duplicates)} duplicate batch rows found — select any rows you want to delete.")
+
+        selected = [
+            idx for idx, r in duplicates.iterrows()
+            if st.checkbox(
+                f"Batch {r['Batch number']}  |  "
+                f"Sample {r.get('Type of samples','')}  |  "
+                f"Due {r.get('Duedate','')}  |  "
+                f"Finished {r.get('Finish date QC','')}  |  "
+                f"Received {r.get('Date received lab','')}  |  "
+                f"Product {r.get('Product code','')}",
+                key=f"dup_{idx}"
+            )
+        ]
+
+        if selected and st.button("🗑️ Delete selected rows"):
+            st.session_state['excel_df'] = st.session_state['excel_df'].drop(index=selected).reset_index(drop=True)
+            st.session_state['duplicates'] = duplicates.drop(index=selected).reset_index(drop=True)
+            st.success(f"✅ Deleted {len(selected)} row(s) from the dataset.")
