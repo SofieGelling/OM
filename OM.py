@@ -7,7 +7,7 @@ import numpy as np
 
 
 def planning(df, color_scheme='Default', marker_shape='square', marker_color='black'):
-    # 2. Kolommen selecteren & hernoemen
+    # 1. Kolommen selecteren & hernoemen
     df = df[['Product code',
              'Batch number',
              'Date received lab',
@@ -18,58 +18,43 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
              'Duedate',
              'Type of samples']].copy()
 
-    df.columns = ['ProductID','Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type']
-    df['Order'] = df['Order'].astype(str)
-    df['Type'] = df['Type'].astype(str)
+    df.columns = ['ProductID',
+                  'Order', 
+                  'Received',
+                  'Planned', 
+                  'Analyses', 
+                  'Approved', 
+                  'Finished', 
+                  'DueDate', 
+                  'Type']
+    
+    df[['Order', 'ProductID', 'Type']] = df[['Order','ProductID','Type']].astype(str)
+
 
     # Datum-kolommen naar datetime
     for col in ['Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate']:
         df[col] = pd.to_datetime(df[col], errors='coerce')
-
     df = df[df['Finished'].isna()].copy()  # Alleen openstaande
 
-    # 3. Kleuren - met kleurenschema opties
+
+    # 2. Kleuren - met kleurenschema opties
     color_schemes = {
-        'Default': {
-            'Onvoltooid': '#d1d1d1',
-            'Planned': '#87a9fa',
-            'Analyses': '#0acafa',
-            'Approved': '#07f702'
-        },
-        'Blues': {
-            'Onvoltooid': '#8dbdf4',
-            'Planned': '#4f88de',
-            'Analyses': '#2567d1',
-            'Approved': '#154bb5'
-        },
-        'Pinks': {
-            'Onvoltooid': '#f59ab4',
-            'Planned': '#ef5c91',
-            'Analyses': '#e91e63',
-            'Approved': '#ad1457'
-        },
-        'Greys': {
-            'Onvoltooid': '#bbbbbb',
-            'Planned': '#909090',
-            'Analyses': '#6b6b6b',
-            'Approved': '#4d4d4d'
-        },
-        'Greens': {
-            'Onvoltooid': '#aed9b8',
-            'Planned': '#6fcf97',
-            'Analyses': '#43a047',
-            'Approved': '#2e7d32'
-        },
-        'Oranges': {
-            'Onvoltooid': '#ffcc80',
-            'Planned': '#ffa726',
-            'Analyses': '#fb8c00',
-            'Approved': '#e65100'
-        }
-    }
+        'Default':  {'Onvoltooid': '#d1d1d1', 'Planned': '#87a9fa',
+                     'Analyses':   '#0acafa', 'Approved': '#07f702'},
+        'Blues':    {'Onvoltooid': '#8dbdf4', 'Planned': '#4f88de',
+                     'Analyses':   '#2567d1', 'Approved': '#154bb5'},
+        'Pinks':    {'Onvoltooid': '#f59ab4', 'Planned': '#ef5c91',
+                     'Analyses':   '#e91e63', 'Approved': '#ad1457'},
+        'Greys':    {'Onvoltooid': '#bbbbbb', 'Planned': '#909090',
+                     'Analyses':   '#6b6b6b', 'Approved': '#4d4d4d'},
+        'Greens':   {'Onvoltooid': '#aed9b8', 'Planned': '#6fcf97',
+                     'Analyses':   '#43a047', 'Approved': '#2e7d32'},
+        'Oranges':  {'Onvoltooid': '#ffcc80', 'Planned': '#ffa726',
+                     'Analyses':   '#fb8c00', 'Approved': '#e65100'}}
     COLORS = color_schemes.get(color_scheme, color_schemes['Default'])
 
-    # 4. Segmenten bouwen
+
+    # 3. Segmenten bouwen
     today = pd.Timestamp.today().normalize()
     step_order = ['Planned', 'Analyses', 'Approved']
     segments = []
@@ -94,6 +79,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     seg_df = pd.DataFrame(segments)
 
 
+    # 4. Hoover bouwen 
     df['Hover'] = df.apply(build_hover, axis=1)
     required_columns = ['Order', 'Hover']
     for col in required_columns:
@@ -103,6 +89,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     seg_df = seg_df.merge(df[required_columns], on='Order', how='left')
 
     #seg_df = seg_df.merge(df[['Order', 'Hover']], on='Order', how='left')
+
 
     # 6. Zorg dat y-as categorisch blijft
     df['Order'] = df['Order'].astype(str)
@@ -119,6 +106,17 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         custom_data=['Hover']
     )
     fig.update_traces(hovertemplate='%{customdata[0]}<extra></extra>')
+
+    # ▼ y-labels vervangen door product-codes
+    mapping = df.drop_duplicates('Order').set_index('Order')['ProductID']
+    fig.update_yaxes(
+        tickmode='array',
+        tickvals=mapping.index.tolist(),
+        ticktext=mapping.values.tolist(),
+        title='Product code',
+        autorange='reversed'
+    )
+
     fig.update_yaxes(type='category', autorange='reversed')
 
     # 8.1 Verticale lijn voor vandaag (volledig doorgetrokken, met legenda)
@@ -163,8 +161,8 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
     # 5. Hovertekst toevoegen via merge (en correct sorteren)
 def build_hover(r):
-    lines = [f"<b>{r['Order']}</b>: onvoltooid"]
-    lines.append(f"<b>{r['ProductID']}</b>")
+    lines = [f"<b>{r['Order']}</b>: Batch nummer"]
+    lines.append(f"<b>{r['ProductID']}</b>: Product code")
     if pd.notna(r['Received']): lines.append(f"Received: {r['Received'].date()}")
     if pd.notna(r['Planned']): lines.append(f"Planned: {r['Planned'].date()}")
     if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
