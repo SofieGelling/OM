@@ -1,7 +1,7 @@
 import streamlit as st
 from Functies import find_duplicates   # ← your helper
 
-st.set_page_config(page_title="Analysis", layout="wide")
+st.set_page_config(page_title="Check", layout="wide")
 st.title("🚩 Data-quality checks")
 
 # ─────────────────────────────────────────────────────────────
