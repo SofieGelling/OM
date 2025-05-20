@@ -28,6 +28,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
                   'DueDate', 
                   'Type']
     
+    df['ProductID'] = df['ProductID'].str.upper()
     df[['Order', 'ProductID', 'Type']] = df[['Order','ProductID','Type']].astype(str)
 
 
