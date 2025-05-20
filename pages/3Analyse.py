@@ -46,7 +46,7 @@ df = st.session_state['excel_df']
 
 # ─────────────────────────────────────────────────────────────
 # Duplicates-sectie met uitleg + check + unfinished toggle in één expander
-with st.expander("🔍 Duplicate batch numbers", expanded=True):
+with st.expander("🔍 Duplicate batch numbers", expanded=False):
     st.markdown("""
 If multiple rows share the same **Batch number**, the timeline chart may show overlapping bars or misleading durations.
 

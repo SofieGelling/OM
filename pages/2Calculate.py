@@ -52,8 +52,8 @@ if 'excel_df' in st.session_state:
                         )
                     fig.add_annotation(
                         y=target_value,
-                        x=0,  # box is centered on x=0
-                        text=f"Target: {target_value}",
+                        x=0.5,  # box is centered on x=0
+                        text=f"Target: <b>{target_value}<b>",
                         showarrow=False,
                         yshift=10,
                         font=dict(color="red")
