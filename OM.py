@@ -153,7 +153,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     fig.update_layout(
         title='Open batches (as of today)',
         xaxis_title='Date',
-        yaxis_title='Batch nummer',
+        yaxis_title='Product code',
         legend_title='Process step',
         height=900
     )
@@ -161,6 +161,8 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     return fig
 
     # 5. Hovertekst toevoegen via merge (en correct sorteren)
+
+    
 def build_hover(r):
     lines = [f"<b>{r['Order']}</b>: Batch nummer"]
     lines.append(f"<b>{r['ProductID']}</b>: Product code")
@@ -169,8 +171,9 @@ def build_hover(r):
     if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
     if pd.notna(r['Approved']): lines.append(f"Approval analyses: {r['Approved'].date()}")
     if pd.notna(r['DueDate']): lines.append(f"Due date: {r['DueDate'].date()}")
-    return "<br>".join(lines)
-    
+    return "<br>".join(lines)    
+
+
 def filter_by_sample_type(df, sample_type=None):
     if 'Type of samples' not in df.columns:
         raise KeyError("The dataframe does not contain a 'Type of samples' column.")

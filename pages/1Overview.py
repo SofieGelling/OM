@@ -29,7 +29,7 @@ if 'excel_df' in st.session_state:
                 filter_samples.append(sample)
 
     # SOO filter
-    remove_soo = st.toggle("Remove SOO cases", value=False)
+    remove_soo = st.toggle("Remove OOS cases", value=False)
     if remove_soo:
         df = filter_OOS(df)
 

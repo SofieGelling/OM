@@ -1,6 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+import streamlit as st
+import plotly.express as px
+from OM import filter_OOS
+
 
 
 # Vinden van dubbelen 
@@ -140,6 +144,115 @@ def wachttijden(df):
 
     fig.show()
 
+
+# Boxplots 
+def Boxplot(df: pd.DataFrame):
+    df = df[['Product code',
+             'Batch number',
+             'Date received lab',
+             'Planned',
+             'Analyses completed',
+             'Approval analyses',
+             'Finish date QC',
+             'Duedate',
+             'Type of samples',
+             'TAT Target',
+             'Reason overdue']].copy()
+
+    df.columns = ['ProductID','Order', 'Received', 'Planned', 'Analyses', 'Approved', 'Finished', 'DueDate', 'Type', 'Target', 'Reason overdue']
+    df['Order'] = df['Order'].astype(str)
+    df['Type'] = df['Type'].astype(str).str.upper()
+
+    df_n = df[df['Finished'].notna()].copy()
+    df_n['Finished'] = pd.to_datetime(df_n['Finished'])
+    df_n['Received'] = pd.to_datetime(df_n['Received'])
+    df_n['Month'] = df_n['Finished'].dt.month
+    df_n = df_n[df_n['Month'] > 0]
+    df_n['Time_in_lab'] = (df_n['Finished'] - df_n['Received']).dt.days
+
+    unique_types = sorted(df_n['Type'].unique())
+    selected_type = st.selectbox("Select a sample type", unique_types)
+
+    df_type = df_n[df_n['Type'] == selected_type]
+
+    if len(df_type) < 5:
+        st.warning(f"⚠️ Too few samples for type '{selected_type}' ({len(df_type)} entries)")
+        return
+
+    # Hovervoorbereiding
+    df_type['Order_fmt'] = df_type['Order']
+    df_type['ProductID_fmt'] = df_type['ProductID']
+    df_type['Received_fmt'] = df_type['Received'].dt.date.astype(str)
+    df_type['Finished_fmt'] = df_type['Finished'].dt.date.astype(str)
+    df_type['Time_in_lab_fmt'] = df_type['Time_in_lab'].astype(str)
+
+    default_target = df_type['Target'].iloc[0]
+    col1, col2 = st.columns([1, 2])
+    show_target_line = col1.checkbox("Show targetline", value=True)
+    remove_soo = col1.toggle("Remove OOS cases", value=False)
+    if remove_soo:
+        df_type = filter_OOS(df_type)
+    target_value = col2.number_input("Targetvalue (days)", value=float(default_target), step=1.0)
+
+
+    fig = px.box(
+        df_type,
+        x='Month',
+        y='Time_in_lab',
+        points='outliers',
+        title=f"Time in Lab per Month - Type: {selected_type}",
+        category_orders={'Month': list(range(1, 13))},
+        custom_data=[
+            'Order_fmt', 'ProductID_fmt', 'Received_fmt', 'Finished_fmt', 'Time_in_lab_fmt'
+        ]
+    )
+
+    fig.update_xaxes(type='category')
+
+    fig.update_traces(
+        hovertemplate=
+            "<b>Order = %{customdata[0]}</b><br>" +
+            "<b>ProductID = %{customdata[1]}</b><br>" +
+            "Received = %{customdata[2]}<br>" +
+            "Finished = %{customdata[3]}<br>" +
+            "Time in lab = %{customdata[4]}<extra></extra>"
+    )
+
+    if show_target_line:
+        fig.add_shape(
+            type="line",
+            xref='x',
+            yref='y',
+            x0='-1',
+            x1='12',
+            y0=target_value,
+            y1=target_value,
+            line=dict(color="red", width=2)
+        )
+
+        fig.add_annotation(
+            x=12, y=target_value,
+            text=f"Target: <b>{target_value}</b>",
+            showarrow=False,
+            yshift=10,
+            font=dict(color="red")
+        )
+
+
+    # Negatieve punten
+    negatief = df_type[df_type['Time_in_lab'] < 0]
+    if not negatief.empty:
+        fig.add_trace(go.Scatter(
+            x=negatief['Month'],
+            y=negatief['Time_in_lab'],
+            mode='markers',
+            marker=dict(color='red', size=8, symbol='circle'),
+            name='Negatief'
+        ))
+
+    fig.update_yaxes(title_text="Time in lab")
+    fig.update_layout(height=700)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 df = pd.read_excel('TAT KPI Sheet (3).xlsx', sheet_name='Samples Release 2025')

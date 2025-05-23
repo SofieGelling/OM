@@ -23,7 +23,7 @@ Use the filters and duplicate check below to clean and refine your dataset.
 # Vereiste kolommen uitleg
 with st.expander("📋 Required column names", expanded=False):
     st.markdown("""
-Your uploaded file **must include** the following column names **without changes**:
+Your uploaded file must include the following column names without changes and must be located in the Excel sheet named **"Samples Release 2025"**:
 
 - `Batch number`  
 - `Date received lab`  
