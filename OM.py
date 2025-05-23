@@ -111,14 +111,18 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
     fig.update_traces(hovertemplate='%{customdata[0]}<extra></extra>')
 
     # ▼ y-labels vervangen door product-codes
-    mapping = df.drop_duplicates('Order').set_index('Order')['ProductID']
+    mapping = df.drop_duplicates('Order').set_index('Order')
+    tickvals = mapping.index.tolist()
+    ticktext = [f"{row['ProductID']} ({order})" for order, row in mapping.iterrows()]
+
     fig.update_yaxes(
         tickmode='array',
-        tickvals=mapping.index.tolist(),
-        ticktext=mapping.values.tolist(),
-        title='Product code',
+        tickvals=tickvals,
+        ticktext=ticktext,
+        title='Product code (Batch)',
         autorange='reversed'
     )
+
 
     fig.update_yaxes(type='category', autorange='reversed')
 
@@ -132,15 +136,6 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         line=dict(color="grey", width=2, dash="dot")
     )
 
-    # Today toevoegen aan legenda
-    fig.add_trace(go.Scatter(
-        x=[today],
-        y=[None],  # y=None zodat hij geen punt tekent
-        mode='lines',
-        line=dict(color="grey", width=2, dash="dot"),
-        name=f"Today: {today.date()}"
-    ))
-
     fig.add_trace(go.Scatter(
         x=df['DueDate'],
         y=df['Order'],
@@ -149,6 +144,15 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         name='Due Date',
         hovertemplate=df['DueDate'].dt.strftime("Due date: %Y-%m-%d") + "<extra></extra>",
         showlegend=True
+    ))
+
+    # Today toevoegen aan legenda
+    fig.add_trace(go.Scatter(
+        x=[today],
+        y=[None],  # y=None zodat hij geen punt tekent
+        mode='lines',
+        line=dict(color="grey", width=2, dash="dot"),
+        name=f"Today: {today.date()}"
     ))
 
     # 9. Layout
