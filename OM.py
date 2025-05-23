@@ -16,7 +16,8 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
              'Approval analyses',
              'Finish date QC',
              'Duedate',
-             'Type of samples']].copy()
+             'Type of samples', 
+             'Reason overdue']].copy()
 
     df.columns = ['ProductID',
                   'Order', 
@@ -26,7 +27,8 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
                   'Approved', 
                   'Finished', 
                   'DueDate', 
-                  'Type']
+                  'Type', 
+                  'Reason overdue']
     
     df['ProductID'] = df['ProductID'].str.upper()
     df[['Order', 'ProductID', 'Type']] = df[['Order','ProductID','Type']].astype(str)
@@ -162,7 +164,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
     # 5. Hovertekst toevoegen via merge (en correct sorteren)
 
-    
+
 def build_hover(r):
     lines = [f"<b>{r['Order']}</b>: Batch nummer"]
     lines.append(f"<b>{r['ProductID']}</b>: Product code")
@@ -171,6 +173,8 @@ def build_hover(r):
     if pd.notna(r['Analyses']): lines.append(f"Analyses completed: {r['Analyses'].date()}")
     if pd.notna(r['Approved']): lines.append(f"Approval analyses: {r['Approved'].date()}")
     if pd.notna(r['DueDate']): lines.append(f"Due date: {r['DueDate'].date()}")
+    if 'Reason overdue' in r and pd.notna(r['Reason overdue']):
+        lines.append(f"<span style='color:red;'>Reason overdue: {r['Reason overdue']}</span>")
     return "<br>".join(lines)    
 
 

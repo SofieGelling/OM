@@ -185,6 +185,9 @@ def Boxplot(df: pd.DataFrame):
     df_type['Received_fmt'] = df_type['Received'].dt.date.astype(str)
     df_type['Finished_fmt'] = df_type['Finished'].dt.date.astype(str)
     df_type['Time_in_lab_fmt'] = df_type['Time_in_lab'].astype(str)
+    df_type['Reason_fmt'] = df_type['Reason overdue'].fillna("").apply(
+        lambda x: f"<span style='color:red;'>Reason overdue: {x}</span>" if x else "")
+
 
     default_target = df_type['Target'].iloc[0]
     col1, col2 = st.columns([1, 2])
@@ -202,9 +205,8 @@ def Boxplot(df: pd.DataFrame):
         points='outliers',
         title=f"Time in Lab per Month - Type: {selected_type}",
         category_orders={'Month': list(range(1, 13))},
-        custom_data=[
-            'Order_fmt', 'ProductID_fmt', 'Received_fmt', 'Finished_fmt', 'Time_in_lab_fmt'
-        ]
+        custom_data=[ 'Order_fmt', 'ProductID_fmt', 'Received_fmt', 'Finished_fmt', 'Time_in_lab_fmt', 'Reason_fmt']
+
     )
 
     fig.update_xaxes(type='category')
@@ -215,8 +217,10 @@ def Boxplot(df: pd.DataFrame):
             "<b>ProductID = %{customdata[1]}</b><br>" +
             "Received = %{customdata[2]}<br>" +
             "Finished = %{customdata[3]}<br>" +
-            "Time in lab = %{customdata[4]}<extra></extra>"
+            "Time in lab = %{customdata[4]}<br>" +
+            "%{customdata[5]}<extra></extra>"
     )
+
 
     if show_target_line:
         fig.add_shape(
