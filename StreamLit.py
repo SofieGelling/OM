@@ -7,18 +7,19 @@ from Functies import remove_empty_rows
 # -------------------------    Pagina met toggle    ---------------------------------------------------
 
 st.set_page_config(page_title="Excel Upload", layout="wide")
-st.title("📥 Upload je Excelbestand")
+st.title("📥 Upload your Excel file")
 
-uploaded = st.file_uploader("Upload Excel-bestand", type="xlsx")
+uploaded = st.file_uploader("Upload Excel file", type="xlsx")
 
 if uploaded:
     df = pd.read_excel(uploaded, sheet_name="Samples Release 2025")
     df = remove_empty_rows(df)
-    st.session_state['excel_df'] = df  # ⬅️ opslaan voor andere pagina’s
-    st.success("✅ Bestand opgeslagen! Ga naar de andere pagina’s.")
+    st.session_state['excel_df'] = df  # ⬅️ store for use on other pages
+    st.success("✅ File saved! You can now proceed to the other pages.")
 
-    # Optioneel: preview
-    st.subheader("Voorbeeld:")
+    # Optional: preview
+    st.subheader("Preview:")
     st.dataframe(df.head())
 else:
-    st.info("👈 Upload een bestand om te starten.")
+    st.info("👈 Upload a file to get started.")
+

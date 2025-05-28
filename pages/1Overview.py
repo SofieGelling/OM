@@ -2,8 +2,8 @@ import streamlit as st
 from OM import planning, filter_by_sample_type, filter_OOS
 import pandas as pd
 
-st.set_page_config(page_title="Planning", layout="wide")
-st.title("📦 Planningstijdlijn")
+st.set_page_config(page_title="Schedule", layout="wide")
+st.title("📦 Scheduling Timeline")
 
 if 'excel_df' in st.session_state:
     df = st.session_state['excel_df']

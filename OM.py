@@ -42,17 +42,17 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
 
     # 2. Kleuren - met kleurenschema opties
     color_schemes = {
-        'Default':  {'Onvoltooid': '#d1d1d1', 'Planned': '#87a9fa',
+        'Default':  {'Received': '#d1d1d1', 'Planned': '#87a9fa',
                      'Analyses':   '#0acafa', 'Approved': '#07f702'},
-        'Blues':    {'Onvoltooid': '#8dbdf4', 'Planned': '#4f88de',
+        'Blues':    {'Received': '#8dbdf4', 'Planned': '#4f88de',
                      'Analyses':   '#2567d1', 'Approved': '#154bb5'},
-        'Pinks':    {'Onvoltooid': '#f59ab4', 'Planned': '#ef5c91',
+        'Pinks':    {'Received': '#f59ab4', 'Planned': '#ef5c91',
                      'Analyses':   '#e91e63', 'Approved': '#ad1457'},
-        'Greys':    {'Onvoltooid': '#bbbbbb', 'Planned': '#909090',
+        'Greys':    {'Received': '#bbbbbb', 'Planned': '#909090',
                      'Analyses':   '#6b6b6b', 'Approved': '#4d4d4d'},
-        'Greens':   {'Onvoltooid': '#aed9b8', 'Planned': '#6fcf97',
+        'Greens':   {'Received': '#aed9b8', 'Planned': '#6fcf97',
                      'Analyses':   '#43a047', 'Approved': '#2e7d32'},
-        'Oranges':  {'Onvoltooid': '#ffcc80', 'Planned': '#ffa726',
+        'Oranges':  {'Received': '#ffcc80', 'Planned': '#ffa726',
                      'Analyses':   '#fb8c00', 'Approved': '#e65100'}}
     COLORS = color_schemes.get(color_scheme, color_schemes['Default'])
 
@@ -68,7 +68,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         if pd.isna(cur):
             continue
 
-        color = 'Onvoltooid'
+        color = 'Received'
         for step in step_order:
             step_date = row[step]
             if pd.notna(step_date) and step_date >= cur:
