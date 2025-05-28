@@ -10,6 +10,13 @@ if 'excel_df' in st.session_state:
     df = df[df['Finish date QC'].isna()].copy()
     df['Date received lab'] = pd.to_datetime(df['Date received lab'], errors='coerce')
 
+    # 🎨 Kleureninstellingen BOVEN de grafiek
+    scheme_options = ['Default', 'Blues', 'Pinks', 'Greys', 'Greens', 'Oranges']
+    with st.expander("🎨 Change colours", expanded=False):
+        color_scheme = st.selectbox("🎨 Choose a colour scheme", scheme_options, key="color_scheme")
+        marker_shape = st.selectbox("🔷 Marker symbol", ['square', 'circle', 'diamond'], key="marker_shape")
+        marker_color = st.color_picker("🖌️ Marker colour", '#000000', key="marker_color")
+
     # Extra sorteeroptie
     sort_column = st.selectbox(
         "📑 Sort by:",
@@ -33,14 +40,9 @@ if 'excel_df' in st.session_state:
     if remove_soo:
         df = filter_OOS(df)
 
-    # Voor de eerste keer vaste standaardkleuren
-    color_scheme = 'Default'
-    marker_shape = 'square'
-    marker_color = '#000000'
-
     # Check of er sample-types gekozen zijn
     if not filter_samples:
-        st.warning("⚠️ Selecteer minimaal één 'Type of sample' om de tijdlijn te bekijken.")
+        st.warning("⚠️ Select at least one 'Type of sample' to display the timeline.")
     else:
         fig = planning(
             df=filter_by_sample_type(df, filter_samples),
@@ -50,15 +52,5 @@ if 'excel_df' in st.session_state:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Kleureninstellingen ONDER de grafiek
-        scheme_options = ['Default', 'Blues', 'Pinks', 'Greys', 'Greens', 'Oranges']
-        with st.expander("🎨 Change colours", expanded=False):
-            color_scheme  = st.selectbox("🎨 Choose a colour scheme", scheme_options, key="color_scheme")
-            marker_shape  = st.selectbox("🔷 Marker symbol", ['square', 'circle', 'diamond'], key="marker_shape")
-            marker_color  = st.color_picker("🖌️ Marker colour", '#000000', key="marker_color")
-
 else:
     st.warning("⚠️ Upload an Excel file on the main page first.")
-
-
-
