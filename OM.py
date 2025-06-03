@@ -161,7 +161,7 @@ def planning(df, color_scheme='Default', marker_shape='square', marker_color='bl
         xaxis_title='Date',
         yaxis_title='Product code',
         legend_title='Process step',
-        height=900
+        height=950
     )
 
     return fig
